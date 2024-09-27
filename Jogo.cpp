@@ -1,4 +1,6 @@
 #include "Jogo.h"
+#include <cstdlib>
+#include <ctime>
 
 Jogo::Jogo(Heroi* h) : heroi(h), nivelAtual(1) {
     srand(time(0)); // Inicializa a semente para números aleatórios
@@ -13,6 +15,7 @@ void Jogo::iniciar() {
             string sqm = mapa->proximoSqm();
             cout << "Você encontrou: " << sqm << endl;
             if (sqm == "inimigo") {
+                // Aumenta a força dos inimigos a cada nível
                 Inimigo* inimigo = new Inimigo("Inimigo", 5 * nivelAtual, 2 * nivelAtual);
                 cout << "Deseja usar uma poção antes da batalha? (s/n): ";
                 char resposta;
@@ -89,14 +92,27 @@ void Jogo::batalhar(Inimigo* inimigo) {
 }
 
 void Jogo::interagirComElemento(string tipo) {
+    Elemento* novoItem = nullptr;
+
     if (tipo == "arma") {
-        Arma* arma = new Arma("Espada", 5, 10 + 5 * nivelAtual);
-        heroi->adicionarAoCinto(arma);
-        cout << "Você encontrou uma arma: " << arma->nome << endl;
+        novoItem = new Arma("Espada", 5, 10 + 5 * nivelAtual);
+        cout << "Você encontrou uma arma: " << novoItem->nome << endl;
     } else if (tipo == "pocao") {
-        Pocao* pocao = new Pocao("Poção de Vida", 2, 10 + 10 * nivelAtual);
-        heroi->adicionarAMochila(pocao);
+        novoItem = new Pocao("Poção de Vida", 2, 10 + 10 * nivelAtual);
         cout << "Você encontrou uma poção!" << endl;
+    }
+
+    if (novoItem != nullptr) {
+        cout << "Deseja pegar o item? (s/n): ";
+        char escolha;
+        cin >> escolha;
+
+        if (escolha == 's' || escolha == 'S') {
+            heroi->alocarItem(novoItem);
+        } else {
+            cout << "Você decidiu não pegar o item." << endl;
+            delete novoItem;
+        }
     }
 }
 
@@ -112,13 +128,21 @@ void Jogo::salvarPontuacao() {
 
 void Jogo::gerarNovoNivel(Mapa* mapa) {
     int tamanhoMapa = 5 + nivelAtual * 2; // Aumenta o tamanho do mapa a cada nível
+
     for (int i = 0; i < tamanhoMapa; i++) {
-        int randomEvent = rand() % 3;
-        if (randomEvent == 0) {
+        int randomEvent = rand() % 100; // Gera um número entre 0 e 99
+
+        // Reduz as chances de encontrar armas e poções conforme o nível aumenta
+        int chanceInimigo = min(30 + nivelAtual * 2, 50);   // Aumenta a chance de encontrar inimigos, max 50%
+        int chanceArma = max(20 - nivelAtual, 5);           // Diminui a chance de encontrar armas, min 5%
+        int chancePocao = max(30 - nivelAtual, 5);          // Diminui a chance de encontrar poções, min 5%
+        int chanceVazio = 100 - chanceInimigo - chanceArma - chancePocao; // Resto da chance é para espaços vazios
+
+        if (randomEvent < chanceInimigo) {
             mapa->adicionarSqm("inimigo");
-        } else if (randomEvent == 1) {
+        } else if (randomEvent < chanceInimigo + chanceArma) {
             mapa->adicionarSqm("arma");
-        } else if (randomEvent == 2) {
+        } else if (randomEvent < chanceInimigo + chanceArma + chancePocao) {
             mapa->adicionarSqm("pocao");
         } else {
             mapa->adicionarSqm("vazio");

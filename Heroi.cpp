@@ -16,7 +16,7 @@ void Heroi::adicionarAoCinto(Elemento* e) {
         numItensCinto++;
         cout << e->nome << " foi adicionado ao cinto." << endl;
     } else {
-        adicionarAMochila(e);
+        cout << "Não foi possível adicionar " << e->nome << " ao cinto. Peso ou espaço insuficiente." << endl;
     }
 }
 
@@ -27,6 +27,23 @@ void Heroi::adicionarAMochila(Elemento* e) {
         cout << e->nome << " foi adicionado à mochila." << endl;
     } else {
         cout << "Mochila cheia! Não foi possível adicionar " << e->nome << endl;
+    }
+}
+
+void Heroi::alocarItem(Elemento* e) {
+    cout << "Onde deseja alocar o item " << e->nome << "?" << endl;
+    cout << "1. Cinto" << endl;
+    cout << "2. Mochila" << endl;
+    int escolha;
+    cin >> escolha;
+
+    if (escolha == 1) {
+        adicionarAoCinto(e);
+    } else if (escolha == 2) {
+        adicionarAMochila(e);
+    } else {
+        cout << "Escolha inválida. Item alocado na mochila por padrão." << endl;
+        adicionarAMochila(e);
     }
 }
 
@@ -50,19 +67,18 @@ void Heroi::usarPocao() {
 
 void Heroi::mostrarStatus() {
     cout << "Nome: " << nome << " | Vida: " << vida << endl;
-    cout << "Cinto: ";
-    for (int i = 0; i < numItensCinto; i++) {
-        if (cinto[i] != nullptr) {
-            cout << cinto[i]->nome << " ";
-        }
-    }
-    cout << endl;
-    cout << "Peso no cinto: " << pesoAtualCinto << "/30" << endl;
-
-    if (numItensMochila > 0 && mochila[numItensMochila - 1] != nullptr) {
-        cout << "Mochila: " << mochila[numItensMochila - 1]->nome << endl;
+    cout << "Primeiro item no cinto: ";
+    if (numItensCinto > 0 && cinto[0] != nullptr) {
+        cout << cinto[0]->nome << endl;
     } else {
-        cout << "Mochila está vazia!" << endl;
+        cout << "Cinto vazio." << endl;
+    }
+
+    cout << "Último item na mochila: ";
+    if (numItensMochila > 0 && mochila[numItensMochila - 1] != nullptr) {
+        cout << mochila[numItensMochila - 1]->nome << endl;
+    } else {
+        cout << "Mochila vazia." << endl;
     }
 }
 

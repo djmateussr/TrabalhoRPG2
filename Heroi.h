@@ -23,6 +23,7 @@ public:
     Heroi(string nome, int vida);
     void adicionarAoCinto(Elemento* e);
     void adicionarAMochila(Elemento* e);
+    void alocarItem(Elemento* e);
     void usarPocao();
     void mostrarStatus();
     Arma* escolherArma();
