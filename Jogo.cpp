@@ -11,12 +11,18 @@ void Jogo::iniciar() {
 
         while (!mapa->mapaVazio()) {
             string sqm = mapa->proximoSqm();
-            cout << "Voce encontrou: " << sqm << endl;
+            cout << "Você encontrou: " << sqm << endl;
             if (sqm == "inimigo") {
                 Inimigo* inimigo = new Inimigo("Inimigo", 5 * nivelAtual, 2 * nivelAtual);
+                cout << "Deseja usar uma poção antes da batalha? (s/n): ";
+                char resposta;
+                cin >> resposta;
+                if (resposta == 's' || resposta == 'S') {
+                    heroi->usarPocao();
+                }
                 batalhar(inimigo);
                 delete inimigo;
-            } else if (sqm == "arma" || "pocao") {
+            } else if (sqm == "arma" || sqm == "pocao") {
                 interagirComElemento(sqm);
             } else {
                 cout << "Caminho vazio..." << endl;
@@ -24,7 +30,7 @@ void Jogo::iniciar() {
             heroi->mostrarStatus();
         }
 
-        cout << "Parabens, voce terminou o nivel " << nivelAtual << "!" << endl;
+        cout << "Parabéns, você terminou o nível " << nivelAtual << "!" << endl;
         nivelAtual++;
         delete mapa;
     }
@@ -32,18 +38,53 @@ void Jogo::iniciar() {
 }
 
 void Jogo::batalhar(Inimigo* inimigo) {
-    cout << "Uma batalha comecou!" << endl;
-    while (inimigo->vida > 0 && heroi->vida > 0) {
-        inimigo->vida -= 2;
-        heroi->vida -= inimigo->ataque;
-        cout << "Inimigo HP: " << inimigo->vida << " | Heroi HP: " << heroi->vida << endl;
+    cout << "Uma batalha começou!" << endl;
+
+    Arma* armaAtual = heroi->escolherArma();
+    if (!armaAtual) {
+        cout << "Você não tem uma arma válida para usar. Fuga forçada." << endl;
+        return;
     }
 
-    if (heroi->vida <= 0) {
-        cout << "Voce foi derrotado!" << endl;
-        exit(0);
-    } else {
-        cout << "Voce derrotou o inimigo!" << endl;
+    while (inimigo->vida > 0 && heroi->vida > 0) {
+        cout << "\nEscolha sua ação:" << endl;
+        cout << "1. Atacar com a arma atual (" << armaAtual->nome << ")" << endl;
+        cout << "2. Trocar de arma" << endl;
+        cout << "3. Usar poção" << endl;
+
+        int escolha;
+        cin >> escolha;
+
+        switch (escolha) {
+            case 1: // Atacar com a arma atual
+                inimigo->vida -= armaAtual->ataque;
+                heroi->vida -= inimigo->ataque;
+                cout << "Você atacou o inimigo! Inimigo HP: " << inimigo->vida << ", Seu HP: " << heroi->vida << endl;
+                break;
+
+            case 2: // Trocar de arma
+                armaAtual = heroi->escolherArma();
+                if (!armaAtual) {
+                    cout << "Você não tem uma arma válida para usar. Fuga forçada." << endl;
+                    return;
+                }
+                break;
+
+            case 3: // Usar poção
+                heroi->usarPocao();
+                break;
+
+            default:
+                cout << "Escolha inválida, você perdeu a vez!" << endl;
+                break;
+        }
+
+        if (heroi->vida <= 0) {
+            cout << "Você foi derrotado!" << endl;
+            exit(0);
+        } else if (inimigo->vida <= 0) {
+            cout << "Você derrotou o inimigo!" << endl;
+        }
     }
 }
 
@@ -51,30 +92,21 @@ void Jogo::interagirComElemento(string tipo) {
     if (tipo == "arma") {
         Arma* arma = new Arma("Espada", 5, 10 + 5 * nivelAtual);
         heroi->adicionarAoCinto(arma);
-        cout << "Voce encontrou uma arma: " << arma->nome << endl;
-    }if (tipo == "arma") {
-        Arma* arma = new Arma("Arco e Flecha", 3, 7 + 5 * nivelAtual);
-        heroi->adicionarAoCinto(arma);
-        cout << "Voce encontrou uma arma: " << arma->nome << endl;
-    }if (tipo == "arma") {
-        Arma* arma = new Arma("Lanca", 10, 15 + 5 * nivelAtual);
-        heroi->adicionarAoCinto(arma);
-        cout << "Voce encontrou uma arma: " << arma->nome << endl;
-    }else if (tipo == "pocao") {
-        Pocao* pocao = new Pocao("Pocao de Vida", 2, 10 + 10 * nivelAtual);
+        cout << "Você encontrou uma arma: " << arma->nome << endl;
+    } else if (tipo == "pocao") {
+        Pocao* pocao = new Pocao("Poção de Vida", 2, 10 + 10 * nivelAtual);
         heroi->adicionarAMochila(pocao);
-        cout << "Voce encontrou uma pocao!" << endl;
+        cout << "Você encontrou uma poção!" << endl;
     }
 }
 
 void Jogo::salvarPontuacao() {
     ofstream arquivo("high_scores.txt", ios::app);
     if (arquivo.is_open()) {
-        arquivo << "Jogador: " << heroi->nome << " | Nivel atingido: " << nivelAtual << endl;
-        cout << "Arquivo gerado com sucesso" << endl;
+        arquivo << "Jogador: " << heroi->nome << " | Nível atingido: " << nivelAtual << endl;
         arquivo.close();
     } else {
-        cout << "Nao foi possivel abrir o arquivo de pontuacao." << endl;
+        cout << "Não foi possível abrir o arquivo de pontuação." << endl;
     }
 }
 
